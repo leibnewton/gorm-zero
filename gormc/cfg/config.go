@@ -1,4 +1,4 @@
-package gormc
+package cfg
 
 import (
 	"gorm.io/gorm/logger"
@@ -8,17 +8,18 @@ import (
 )
 
 type GormLogConfigI interface {
-	GetGormLogMode() logger.LogLevel
+	GetGormLogMode() string
 	GetSlowThreshold() time.Duration
 	GetColorful() bool
 }
 
-func newDefaultGormLogger(cfg GormLogConfigI) logger.Interface {
+func NewDefaultGormLogger(cfg GormLogConfigI) logger.Interface {
+	level := overwriteGormLogMode(cfg.GetGormLogMode())
 	newLogger := logger.New(
 		log.New(os.Stderr, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
 		logger.Config{
 			SlowThreshold:             cfg.GetSlowThreshold(), // 慢 SQL 阈值
-			LogLevel:                  cfg.GetGormLogMode(),   // 日志级别
+			LogLevel:                  level,                  // 日志级别
 			IgnoreRecordNotFoundError: true,                   // 忽略ErrRecordNotFound（记录未找到）错误
 			Colorful:                  cfg.GetColorful(),      // 禁用彩色打印
 		},

@@ -1,12 +1,14 @@
-package gormc
+package mysql
 
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"time"
+
+	"github.com/SpectatorNan/gorm-zero/gormc/cfg"
 )
 
 type Mysql struct {
@@ -27,8 +29,8 @@ func (m *Mysql) Dsn() string {
 	return m.Username + ":" + m.Password + "@tcp(" + m.Path + ":" + fmt.Sprintf("%d", m.Port) + ")/" + m.Dbname + "?" + m.Config
 }
 
-func (m *Mysql) GetGormLogMode() logger.LogLevel {
-	return overwriteGormLogMode(m.LogMode)
+func (m *Mysql) GetGormLogMode() string {
+	return m.LogMode
 }
 
 func (m *Mysql) GetSlowThreshold() time.Duration {
@@ -45,7 +47,7 @@ func ConnectMysql(m Mysql) (*gorm.DB, error) {
 	mysqlCfg := mysql.Config{
 		DSN: m.Dsn(),
 	}
-	newLogger := newDefaultGormLogger(&m)
+	newLogger := cfg.NewDefaultGormLogger(&m)
 	db, err := gorm.Open(mysql.New(mysqlCfg), &gorm.Config{
 		//Logger: logger.Default.LogMode(logger.Info),
 		Logger: newLogger,
