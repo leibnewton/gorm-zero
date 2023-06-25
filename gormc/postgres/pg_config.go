@@ -1,12 +1,14 @@
-package gormc
+package postgres
 
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"time"
+
+	"github.com/SpectatorNan/gorm-zero/gormc/cfg"
 )
 
 type PgSql struct {
@@ -27,8 +29,8 @@ type PgSql struct {
 func (m *PgSql) Dsn() string {
 	return fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d sslmode=%s TimeZone=%s", m.Username, m.Password, m.Dbname, m.Path, m.Port, m.SslMode, m.TimeZone)
 }
-func (m *PgSql) GetGormLogMode() logger.LogLevel {
-	return overwriteGormLogMode(m.LogMode)
+func (m *PgSql) GetGormLogMode() string {
+	return m.LogMode
 }
 
 func (m *PgSql) GetSlowThreshold() time.Duration {
@@ -42,7 +44,7 @@ func ConnectPgSql(m PgSql) (*gorm.DB, error) {
 	if m.Dbname == "" {
 		return nil, errors.New("database name is empty")
 	}
-	newLogger := newDefaultGormLogger(&m)
+	newLogger := cfg.NewDefaultGormLogger(&m)
 	pgsqlCfg := postgres.Config{
 		DSN:                  m.Dsn(),
 		PreferSimpleProtocol: true, // disables implicit prepared statement usage
